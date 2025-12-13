@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState, useMemo} from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
+  TextInput
 } from "react-native";
 import { useCartStore } from "../store/cartStore";
 import { useLocalSearchParams, router } from "expo-router";
@@ -28,6 +29,14 @@ const PRODUCTS = [
 export default function CategoryProductsScreen({ route, navigation }) {
     const { categoryName } = useLocalSearchParams();
     const addToCart = useCartStore((s) => s.addToCart);
+    const [search, setSearch] = useState("");
+
+    const filteredProducts = useMemo(() => {
+        if (!search.trim()) return PRODUCTS;
+        return PRODUCTS.filter((p) =>
+          p.name.toLowerCase().includes(search.toLowerCase())
+        );
+      }, [search]);
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
@@ -53,10 +62,19 @@ export default function CategoryProductsScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      
+       {/* 🔍 Search Bar */}
+       <View style={styles.searchBox}>
+        <TextInput
+          placeholder="Search products..."
+          placeholderTextColor="#999"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.searchInput}
+        />
+      </View>
       {/* Products */}
       <FlatList
-        data={PRODUCTS}
+        data={filteredProducts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         numColumns={2}
@@ -127,5 +145,30 @@ const styles = StyleSheet.create({
       fontSize: 12,
       fontWeight: "600",
     },
+    searchBox: {
+        padding: 12,
+        backgroundColor: "#F5F6F7",
+      },
+      
+      searchInput: {
+        height: 42,
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        paddingHorizontal: 14,
+        fontSize: 14,
+        shadowColor: "#000",
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 2,
+      },
+      
+      emptyText: {
+        textAlign: "center",
+        marginTop: 40,
+        color: "#777",
+        fontSize: 14,
+      },
+      
   });
   
