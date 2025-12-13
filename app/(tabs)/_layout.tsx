@@ -1,15 +1,15 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { View, Text } from 'react-native';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useCartStore } from "./store/cartStore";
+import { Tabs } from 'expo-router';
+import React from 'react';
+import { Text, View } from 'react-native';
+import { useCartStore } from "../store/cartStore";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const cart = useCartStore((state) => state.cart);
+  const cart = useCartStore((state) => state.cartItems);
   const total = cart.reduce((sum, item) => sum + item.qty, 0);
 
   return (

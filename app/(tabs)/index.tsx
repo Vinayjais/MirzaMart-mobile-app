@@ -2,17 +2,18 @@
 
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Image,
   FlatList,
+  Image,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import { useCartStore } from "./store/cartStore";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCartStore } from "../store/cartStore";
+import { useRouter } from 'expo-router';
 
 const categories = [
   { id: 1, label: "Fruits & Veg", icon: require("../../assets/icons/veg.png") },
@@ -22,12 +23,17 @@ const categories = [
 ];
 
 const products = [
-  { id: 1, name: "Amul Milk", price: "₹28", img: require("../../assets/products/milk.png") },
-  { id: 2, name: "Banana", price: "₹45", img: require("../../assets/products/banana.png") },
+  { id: 1, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
+  { id: 2, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
+  { id: 3, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
+  { id: 4, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
+  { id: 5, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
+  { id: 6, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
 ];
 
 export default function HomeScreen() {
-  const addToCart = useCartStore((s) => s.addToCart);
+  const  addToCart = useCartStore((s) => s.addToCart);
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,7 +65,12 @@ export default function HomeScreen() {
           data={categories}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.categoryBox}>
+            <TouchableOpacity onPress={()=> router.push({
+              pathname:"/Products/CategoryProductsScreen",
+             params:{
+              categoryName:item.label
+             }
+            }) } style={styles.categoryBox}>
               <Image source={item.icon} style={styles.categoryIcon} />
               <Text style={styles.categoryText}>{item.label}</Text>
             </TouchableOpacity>
@@ -77,7 +88,13 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Quick Buys</Text>
         <View style={styles.productsGrid}>
           {products.map((item) => (
-            <View key={item.id} style={styles.productCard}>
+            <TouchableOpacity key={item.id} style={styles.productCard} onPress={()=> router.push({
+              pathname:'/Products/ProductOverviewScreen',
+              params:{
+                id: item.id
+              }
+            })}>
+              <View >
               <Image source={item.img} style={styles.productImg} />
               <Text style={styles.productName}>{item.name}</Text>
               <Text style={styles.productPrice}>{item.price}</Text>
@@ -86,6 +103,8 @@ export default function HomeScreen() {
                 <Text style={styles.addText}>ADD</Text>
               </TouchableOpacity>
             </View>
+            </TouchableOpacity>
+            
           ))}
         </View>
 
