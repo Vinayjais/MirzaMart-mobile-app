@@ -1,13 +1,16 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-
+import { View, Text } from 'react-native';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useCartStore } from "./store/cartStore";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const cart = useCartStore((state) => state.cart);
+  const total = cart.reduce((sum, item) => sum + item.qty, 0);
 
   return (
     <Tabs
@@ -15,19 +18,72 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-      }}>
+      }}
+    >
+      {/* HOME */}
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="house.fill" color={color} />
+          ),
         }}
       />
+
+      {/* CART */}
       <Tabs.Screen
-        name="explore"
+          name="cart"
+          options={{
+            title: 'Cart',
+            tabBarIcon: ({ color }) => (
+              <View>
+                <IconSymbol size={28} name="cart.fill" color={color} />
+
+                {total > 0 && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      right: -6,
+                      top: -6,
+                      backgroundColor: 'tomato',
+                      width: 18,
+                      height: 18,
+                      borderRadius: 9,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 10 }}>
+                      {total}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ),
+          }}
+        />
+
+
+      {/* ORDERS */}
+      <Tabs.Screen
+        name="orders"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Orders',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="list.bullet" color={color} />
+          ),
+        }}
+      />
+
+      {/* PROFILE */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="person.fill" color={color} />
+          ),
         }}
       />
     </Tabs>

@@ -1,98 +1,165 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// HomeScreen.js
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  FlatList,
+  ScrollView,
+} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import { useCartStore } from "./store/cartStore";
+
+const categories = [
+  { id: 1, label: "Fruits & Veg", icon: require("../../assets/icons/veg.png") },
+  { id: 2, label: "Dairy", icon: require("../../assets/icons/milk.png") },
+  { id: 3, label: "Snacks", icon: require("../../assets/icons/snacks.jpeg") },
+  { id: 4, label: "Beverages", icon: require("../../assets/icons/drink.png") },
+];
+
+const products = [
+  { id: 1, name: "Amul Milk", price: "₹28", img: require("../../assets/products/milk.png") },
+  { id: 2, name: "Banana", price: "₹45", img: require("../../assets/products/banana.png") },
+];
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const addToCart = useCartStore((s) => s.addToCart);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Top Header */}
+      <View style={styles.header}>
+        <TouchableOpacity>
+          <Text style={styles.location}>MirzaMart - Mirzapur ▼</Text>
+          <Text style={styles.deliveryTime}>Delivery in 20 mins</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.profilePic}>
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>V</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          placeholder="Search groceries & essentials"
+          style={styles.searchInput}
+        />
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+
+        {/* Category List */}
+        <FlatList
+          horizontal
+          data={categories}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.categoryBox}>
+              <Image source={item.icon} style={styles.categoryIcon} />
+              <Text style={styles.categoryText}>{item.label}</Text>
+            </TouchableOpacity>
+          )}
+          showsHorizontalScrollIndicator={false}
+          style={{ marginTop: 10 }}
+        />
+
+        {/* Banner */}
+        <View style={styles.banner}>
+          <Text style={styles.bannerText}>⚡ Upto 50% OFF on Daily Essentials</Text>
+        </View>
+
+        {/* Product List */}
+        <Text style={styles.sectionTitle}>Quick Buys</Text>
+        <View style={styles.productsGrid}>
+          {products.map((item) => (
+            <View key={item.id} style={styles.productCard}>
+              <Image source={item.img} style={styles.productImg} />
+              <Text style={styles.productName}>{item.name}</Text>
+              <Text style={styles.productPrice}>{item.price}</Text>
+
+              <TouchableOpacity style={styles.addBtn} onPress={() => addToCart(item)} >
+                <Text style={styles.addText}>ADD</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: { flex: 1, backgroundColor: "#F4F4F4" },
+  header: {
+    padding: 15,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  location: { fontSize: 16, fontWeight: "bold" },
+  deliveryTime: { fontSize: 12, color: "gray" },
+  profilePic: {
+    backgroundColor: "#D9F2E6",
+    width: 36,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 18,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  searchContainer: { paddingHorizontal: 15 },
+  searchInput: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 10,
+    fontSize: 14,
   },
+  categoryBox: {
+    alignItems: "center",
+    marginHorizontal: 10,
+  },
+  categoryIcon: { width: 50, height: 50 },
+  categoryText: { fontSize: 12, marginTop: 5 },
+  banner: {
+    backgroundColor: "#32B768",
+    padding: 15,
+    margin: 15,
+    borderRadius: 12,
+  },
+  bannerText: { color: "white", fontWeight: "bold" },
+  sectionTitle: {
+    marginLeft: 15,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+  productsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 10,
+  },
+  productCard: {
+    width: "46%",
+    backgroundColor: "white",
+    margin: "2%",
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center",
+  },
+  productImg: { width: 70, height: 70, marginBottom: 10 },
+  productName: { fontSize: 14, fontWeight: "600" },
+  productPrice: { fontSize: 14, color: "#32B768", marginVertical: 5 },
+  addBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderColor: "#32B768",
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  addText: { color: "#32B768", fontWeight: "bold" },
 });
