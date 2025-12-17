@@ -43,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "632949de-714d-452d-85a0-72ff81b1beb5"
+      }
+    },
+    "owner": "vindhya-solutions-pvt-ltd"
   }
 }

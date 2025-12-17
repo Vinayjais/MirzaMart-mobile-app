@@ -7,7 +7,8 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
+import { useUserStore } from "../store/useUserStore";
 
 export default function ProfileScreen() {
   const user = {
@@ -15,6 +16,9 @@ export default function ProfileScreen() {
     phone: "+91 98765 43210",
     avatar: "https://i.pravatar.cc/300",
   };
+  const router = useRouter()
+  const userDetails = useUserStore(state => state.user);
+  console.log("========userDetails=======",userDetails)
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -54,9 +58,16 @@ export default function ProfileScreen() {
       </View>
 
       {/* Logout */}
-      <TouchableOpacity style={styles.logoutBtn}>
-        <Text style={styles.logoutText}>Logout</Text>
+      {userDetails == null ?
+      <TouchableOpacity style={styles.logoutBtn} onPress={()=> router.push('/Authentications/login')}>
+          <Text style={styles.logoutText}>Login</Text>
       </TouchableOpacity>
+       :
+        <TouchableOpacity style={styles.logoutBtn}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      }
+     
     </ScrollView>
   );
 }
