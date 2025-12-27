@@ -9,13 +9,60 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
+import {registerUser}  from '../Authentications/Api';
+
+export type userDetailsTypes = {
+   name:String,
+   email:String,
+   password:String,
+   confirmPassword:String 
+  }
 
 export default function RegisterScreen() {
+   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+
+   const validateDetails = (data: userDetailsTypes ) =>{
+        let isValid= true;
+        let nameRegex =  /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+        let mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+          if(!nameRegex.test(data.name)){
+            return alert("Please enter a valid name?")
+          }
+          if(!mailRegex.test(data.email)){
+            return alert("Please enter a valide email?");
+          }
+          if(data.password != data.confirmPassword || data.password == '' || data.confirmPassword == ''){
+            return alert("Confirm password did not match!");
+          }
+     return isValid;
+   }
+  const register = async() =>{
+
+       let  params = {
+             name: name.trim(),
+             email: email.trim(),
+             password:password.trim(),
+             confirmPassword:confirmPassword.trim()
+        }
+        
+       
+        if(!validateDetails(params)) return
+      
+        try {
+           let res = await registerUser(params)
+        } catch (error) {
+          console.log("==register======",error)
+        }
+  
+  }
+
 
   return (
     <KeyboardAvoidingView
@@ -58,7 +105,7 @@ export default function RegisterScreen() {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.primaryBtn}>
+        <TouchableOpacity onPress={()=> register()} style={styles.primaryBtn}>
           <Text style={styles.primaryText}>Register</Text>
         </TouchableOpacity>
 

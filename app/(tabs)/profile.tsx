@@ -18,7 +18,6 @@ export default function ProfileScreen() {
   };
   const router = useRouter()
   const userDetails = useUserStore(state => state.user);
-  console.log("========userDetails=======",userDetails)
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
