@@ -1,5 +1,6 @@
 // HomeScreen.js
 
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
   FlatList,
@@ -7,29 +8,28 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { categories, products } from '../data/products';
 import { useCartStore } from "../store/cartStore";
-import { useRouter } from 'expo-router';
 
-const categories = [
-  { id: 1, label: "Fruits & Veg", icon: require("../../assets/icons/veg.png") },
-  { id: 2, label: "Dairy", icon: require("../../assets/icons/milk.png") },
-  { id: 3, label: "Snacks", icon: require("../../assets/icons/snacks.jpeg") },
-  { id: 4, label: "Beverages", icon: require("../../assets/icons/drink.png") },
-];
+// const categories = [
+//   { id: 1, label: "Fruits & Veg", icon: require("../../assets/icons/veg.png") },
+//   { id: 2, label: "Dairy", icon: require("../../assets/icons/milk.png") },
+//   { id: 3, label: "Snacks", icon: require("../../assets/icons/snacks.jpeg") },
+//   { id: 4, label: "Beverages", icon: require("../../assets/icons/drink.png") },
+// ];
 
-const products = [
-  { id: 1, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
-  { id: 2, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
-  { id: 3, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
-  { id: 4, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
-  { id: 5, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
-  { id: 6, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
-];
+// const products = [
+//   { id: 1, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
+//   { id: 2, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
+//   { id: 3, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
+//   { id: 4, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
+//   { id: 5, name: "Amul Milk", price: "28", img: require("../../assets/products/milk.png") },
+//   { id: 6, name: "Banana", price: "45", img: require("../../assets/products/banana.png") },
+// ];
 
 export default function HomeScreen() {
   const  addToCart = useCartStore((s) => s.addToCart);
@@ -49,12 +49,15 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Search Bar */}
+      {/* Search Bar (tap to open search screen) */}
       <View style={styles.searchContainer}>
-        <TextInput
-          placeholder="Search groceries & essentials"
+        <TouchableOpacity
+          activeOpacity={0.8}
           style={styles.searchInput}
-        />
+          onPress={() => router.push('/Products/SearchedProductsScreen')}
+        >
+          <Text style={{ color: '#999' }}>Search groceries & essentials</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -86,27 +89,40 @@ export default function HomeScreen() {
 
         {/* Product List */}
         <Text style={styles.sectionTitle}>Quick Buys</Text>
-        <View style={styles.productsGrid}>
-          {products.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.productCard} onPress={()=> router.push({
-              pathname:'/Products/ProductOverviewScreen',
-              params:{
-                id: item.id
-              }
-            })}>
-              <View >
-              <Image source={item.img} style={styles.productImg} />
-              <Text style={styles.productName}>{item.name}</Text>
-              <Text style={styles.productPrice}>{item.price}</Text>
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.productsList}
+          columnWrapperStyle={styles.columnWrapper}
+          renderItem={({ item }) => (
+            <View style={styles.productCardWrapper}>
+              <TouchableOpacity
+                style={styles.productCard}
+                activeOpacity={0.9}
+                onPress={() =>
+                  router.push({
+                    pathname: '/Products/ProductOverviewScreen',
+                    params: { id: item.id },
+                  })
+                }
+              >
+                <Image source={item.img} style={styles.productImg} />
+                <Text style={styles.productName} numberOfLines={2}>
+                  {item.name}
+                </Text>
+                <Text style={styles.productPrice}>₹{item.price}</Text>
+              </TouchableOpacity>
 
-              <TouchableOpacity style={styles.addBtn} onPress={() => addToCart(item)} >
-                <Text style={styles.addText}>ADD</Text>
+              <TouchableOpacity
+                style={styles.quickBuyBtn}
+                onPress={() => addToCart({ ...item, qty: 1 })}
+              >
+                <Text style={styles.quickBuyText}>Quick Buy</Text>
               </TouchableOpacity>
             </View>
-            </TouchableOpacity>
-            
-          ))}
-        </View>
+          )}
+        />
 
       </ScrollView>
     </SafeAreaView>
@@ -163,11 +179,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   productCard: {
-    width: "46%",
     backgroundColor: "white",
-    margin: "2%",
     borderRadius: 10,
-    padding: 10,
+    padding: 12,
     alignItems: "center",
   },
   productImg: { width: 70, height: 70, marginBottom: 10 },
@@ -181,4 +195,24 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   addText: { color: "#32B768", fontWeight: "bold" },
+  productsList: {
+    paddingHorizontal: 10,
+    paddingBottom: 30,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  productCardWrapper: {
+    flex: 1,
+    marginHorizontal: 6,
+  },
+  quickBuyBtn: {
+    marginTop: 8,
+    backgroundColor: '#32B768',
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  quickBuyText: { color: '#fff', fontWeight: '700' },
 });

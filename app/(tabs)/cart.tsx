@@ -1,56 +1,95 @@
-import React from "react";
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useMemo } from "react";
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCartStore } from "../store/cartStore";
+import { showRNFlash } from '@/components/ui/rn-flash';
 
 export default function CartScreen() {
-  const cartItems = useCartStore(state => state.cartItems);
-  const removeFromCart = useCartStore(state => state.removeOne);
-  const getTotalCount =  useCartStore( (state) => state.cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0))
+  const cartItems = useCartStore((state: any) => state.cartItems);
+  const addToCart = useCartStore((state: any) => state.addToCart);
+  const removeOne = useCartStore((state: any) => state.removeOne);
+  const removeItem = useCartStore((state: any) => (state as any).removeItem);
+
+  const subtotal = useMemo(() => {
+    return cartItems.reduce((sum: number, item: any) => sum + (Number(item.price) * (item.qty || 1)), 0);
+  }, [cartItems]);
 
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: any }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image source={ item.image ? { uri: item.image } : require('../../assets/products/milk.png') } style={styles.image} />
       <View style={styles.details}>
-        <Text style={styles.name}>{item.name}</Text>
-         <View style={{display:'flex', flexDirection:"row"}}>
-          <Text style={styles.price}>{item.qty} X </Text>
-          <Text style={styles.price}>Rs. {item.price}</Text>
+        <Text style={styles.name} numberOfLines={2}>{item.name}</Text>
+
+        <View style={styles.rowBetween}>
+          <View style={styles.qtyRow}>
+            <TouchableOpacity
+              onPress={() => removeOne(item.id)}
+              style={styles.qtyBtn}
+              accessibilityLabel={`Decrease quantity of ${item.name}`}
+            >
+              <Text style={styles.qtyText}>−</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.qtyCount}>{item.qty}</Text>
+
+            <TouchableOpacity
+              onPress={() => addToCart(item)}
+              style={styles.qtyBtn}
+              accessibilityLabel={`Increase quantity of ${item.name}`}
+            >
+              <Text style={styles.qtyText}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.itemSubtotal}>₹{Number(item.price) * item.qty}</Text>
         </View>
       </View>
-      <View style={{display:'flex',flexDirection:'column'}}>
-      <TouchableOpacity
-        onPress={() => removeFromCart(item.id) }
-        style={styles.removeBtn}
-      >
-        <Text style={styles.removeText}>Remove</Text>
-      </TouchableOpacity>
-      <Text style={{fontWeight:'700', marginVertical:5}}> Rs. {item.qty * item.price}</Text>
 
+      <View style={{display:'flex',flexDirection:'column'}}>
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert('Remove item', `Remove ${item.name} from cart?`, [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Remove', style: 'destructive', onPress: () => {
+                  removeItem(item.id);
+                  showRNFlash({ message: 'Item removed', description: item.name, type: 'info' });
+                } }
+            ]);
+          }}
+          style={styles.removeBtn}
+        >
+          <Text style={styles.removeText}>Remove</Text>
+        </TouchableOpacity>
       </View>
-      
     </View>
   );
 
   return (
     <View style={styles.container}>
       {cartItems.length === 0 ? (
-        <Text style={styles.emptyText}>Your cart is empty</Text>
+        <View style={styles.emptyWrap}>
+          <Text style={styles.emptyText}>Your cart is empty</Text>
+        </View>
       ) : (
         <>
           <FlatList
             data={cartItems}
             keyExtractor={item => item.id.toString()}
             renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 90 }}
+            contentContainerStyle={{ paddingBottom: 140 }}
           />
 
-          <View style={styles.footer}>
-            <Text style={styles.total}>Total: ₹{getTotalCount}</Text>
-            <TouchableOpacity style={styles.checkoutBtn}>
+          <SafeAreaView edges={["bottom"]} style={styles.footer}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.totalLabel}>Subtotal</Text>
+              <Text style={styles.total}>₹{subtotal}</Text>
+            </View>
+
+            <TouchableOpacity style={[styles.checkoutBtn, subtotal === 0 && { opacity: 0.5 }]} disabled={subtotal === 0}>
               <Text style={styles.checkoutText}>Checkout</Text>
             </TouchableOpacity>
-          </View>
+          </SafeAreaView>
         </>
       )}
     </View>
@@ -60,6 +99,7 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 16 ,marginTop:50, backgroundColor: "#fff" },
   emptyText: { textAlign: "center", marginTop: 40, fontSize: 18, fontWeight: "600" },
+  emptyWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -72,6 +112,12 @@ const styles = StyleSheet.create({
   details: { flex: 1, marginLeft: 12 },
   name: { fontSize: 16, fontWeight: "600" },
   price: { marginTop: 4, color: "#555", fontWeight: "bold" },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
+  qtyRow: { flexDirection: 'row', alignItems: 'center' },
+  qtyBtn: { backgroundColor: '#fff', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: '#ddd' },
+  qtyText: { fontSize: 18, fontWeight: '700' },
+  qtyCount: { marginHorizontal: 10, fontSize: 16, fontWeight: '600' },
+  itemSubtotal: { fontSize: 14, fontWeight: '700' },
   removeBtn: {
     backgroundColor: "#FF3B30",
     paddingVertical: 4,
@@ -91,6 +137,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: "#ddd",
   },
+  totalLabel: { color: '#666', fontSize: 12, marginBottom: 4 },
   total: { fontSize: 18, fontWeight: "700" },
   checkoutBtn: {
     backgroundColor: "#00A859",

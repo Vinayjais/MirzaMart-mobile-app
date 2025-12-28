@@ -1,23 +1,26 @@
+import { showRNFlash } from '@/components/ui/rn-flash';
+import { useRouter } from "expo-router";
 import React from "react";
 import {
-  View,
-  Text,
   Image,
-  TouchableOpacity,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { useUserStore } from "../store/useUserStore";
 
 export default function ProfileScreen() {
-  const user = {
+  const router = useRouter();
+  const userDetails = useUserStore(state => state.user);
+  const logout = useUserStore(state => state.logout);
+
+  const user = userDetails ?? {
     name: "Vinay Jaiswal",
     phone: "+91 98765 43210",
     avatar: "https://i.pravatar.cc/300",
   };
-  const router = useRouter()
-  const userDetails = useUserStore(state => state.user);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -62,7 +65,19 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>Login</Text>
       </TouchableOpacity>
        :
-        <TouchableOpacity style={styles.logoutBtn}>
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={async () => {
+            try {
+              // await logoutUser();
+            } catch (e) {
+              // ignore backend errors
+            }
+            logout();
+            showRNFlash({ message: 'Logged out', type: 'info' });
+            router.replace('/Authentications/login');
+          }}
+        >
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       }

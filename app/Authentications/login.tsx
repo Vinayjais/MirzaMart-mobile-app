@@ -1,18 +1,23 @@
+import { showRNFlash } from '@/components/ui/rn-flash';
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity
 } from "react-native";
-import { router } from "expo-router";
+import { useUserStore } from '../store/useUserStore';
+import { loginUser } from './Api';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const setUser = useUserStore((s) => s.setUser);
 
   return (
     <KeyboardAvoidingView
@@ -43,8 +48,44 @@ export default function LoginScreen() {
         <Text style={styles.forgotText}>Forgot Password?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.primaryBtn}>
-        <Text style={styles.primaryText}>Login</Text>
+      <TouchableOpacity
+        style={[styles.primaryBtn, loading ? { opacity: 0.7 } : null]}
+        onPress={async () => {
+          if (!email || !password) {
+            showRNFlash({ message: 'Please enter email and password', type: 'warning' });
+            return;
+          }
+
+          setLoading(true);
+          try {
+            const res = await loginUser({ email: email.trim(), password: password.trim() });
+            const data = res?.data;
+            if (res?.status && res.status >= 200 && res.status < 300) {
+              // Expecting token and user in response.data
+              const token = data?.token ?? data?.authToken ?? null;
+              const user = data?.user ?? data?.data ?? null;
+              if (token && user) {
+                setUser(user, token);
+                showRNFlash({ message: data?.message ?? 'Login successful', type: 'success' });
+                router.replace('/');
+              } else {
+                showRNFlash({ message: data?.message ?? 'Login successful', description: 'But missing token/user in response', type: 'info' });
+                router.replace('/');
+              }
+            } else {
+              showRNFlash({ message: data?.message ?? 'Login failed', type: 'danger' });
+            }
+          } catch (err) {
+            console.log('login error', err);
+            const msg = (err as any)?.message ?? String(err);
+            showRNFlash({ message: 'Network error', description: msg, type: 'danger' });
+          } finally {
+            setLoading(false);
+          }
+        }}
+        disabled={loading}
+      >
+        <Text style={styles.primaryText}>{loading ? 'Logging in...' : 'Login'}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/Authentications/register")}>

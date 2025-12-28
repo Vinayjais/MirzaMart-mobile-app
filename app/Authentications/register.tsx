@@ -1,22 +1,22 @@
+import { showRNFlash } from '@/components/ui/rn-flash';
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity
 } from "react-native";
-import { useRouter } from "expo-router";
-import {registerUser}  from '../Authentications/Api';
+import { registerUser } from '../Authentications/Api';
 
 export type userDetailsTypes = {
-   name:String,
-   email:String,
-   password:String,
-   confirmPassword:String 
+   name: string,
+   email: string,
+   password: string,
+   confirmPassword: string
   }
 
 export default function RegisterScreen() {
@@ -57,8 +57,18 @@ export default function RegisterScreen() {
       
         try {
            let res = await registerUser(params)
+           console.log("==register======",res)  
+        const data = res?.data;
+        if (res?.status && res.status >= 200 && res.status < 300) {
+          showRNFlash({ message: data?.message ?? 'Registration Successful!', description: data?.description ?? 'Please login to continue.', type: 'success' });
+          router.replace("/Authentications/login")
+        } else {
+          showRNFlash({ message: data?.message ?? 'Registration failed! Please try again.', type: 'danger' });
+        }
         } catch (error) {
           console.log("==register======",error)
+          const errMsg = (error as any)?.message ?? String(error);
+          showRNFlash({ message: 'Network error. Please try again.', description: errMsg, type: 'danger' });
         }
   
   }

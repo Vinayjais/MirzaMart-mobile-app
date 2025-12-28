@@ -6,11 +6,13 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
 import { useCartStore } from "../store/cartStore";
+import { useUserStore } from "../store/useUserStore";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const cart = useCartStore((state) => state.cartItems);
   const total = cart.reduce((sum, item) => sum + item.qty, 0);
+  const isAuthenticated = useUserStore((s) => s.isAuthenticated);
 
   return (
     <Tabs
@@ -76,16 +78,28 @@ export default function TabLayout() {
         }}
       />
 
-      {/* PROFILE */}
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
-          ),
-        }}
-      />
+      {/* PROFILE (shows Login if not authenticated) */}
+      {isAuthenticated ? (
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="person.fill" color={color} />
+            ),
+          }}
+        />
+      ) : (
+        <Tabs.Screen
+          name="/Authentications/login"
+          options={{
+            title: 'Login',
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="person.fill" color={color} />
+            ),
+          }}
+        />
+      )}
     </Tabs>
   );
 }
