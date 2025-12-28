@@ -1,13 +1,15 @@
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useState } from 'react';
 import {
-    View,
-    Text,
-    Image,
-    ScrollView,
-    TouchableOpacity,
-    StyleSheet,
-  } from "react-native";
-  import { useLocalSearchParams, router } from "expo-router";
-  import { useCartStore } from "../store/cartStore";
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useCartStore } from "../store/cartStore";
   
   const PRODUCT = {
     id: 1,
@@ -22,10 +24,13 @@ import {
   
   export default function ProductOverviewScreen() {
     const { id } = useLocalSearchParams();
-    const addToCart = useCartStore((s) => s.addToCart);
-    const cartItems = useCartStore((s) => s.cartItems);
+  const addToCart = useCartStore((s: any) => s.addToCart);
+  const removeOne = useCartStore((s: any) => s.removeOne);
+  const cartItems = useCartStore((s: any) => s.cartItems);
+  const productQty = cartItems.find((x: any) => x.id === PRODUCT.id)?.qty || 0;
+    const [liked, setLiked] = useState(false);
   
-    const cartItem = cartItems.find((x) => x.id === PRODUCT.id);
+  const cartItem = cartItems.find((x: any) => x.id === PRODUCT.id);
   
     return (
       <View style={styles.container}>
@@ -33,7 +38,17 @@ import {
     
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Image */}
-          <Image source={{ uri: PRODUCT.image }} style={styles.image} />
+          <View style={styles.imageWrap}>
+            <Image source={{ uri: PRODUCT.image }} style={styles.image} />
+
+            <TouchableOpacity
+              accessibilityLabel={liked ? 'Unlove product' : 'Love product'}
+              onPress={() => setLiked(!liked)}
+              style={[styles.heartBtn, liked && styles.heartBtnActive]}
+            >
+              <MaterialIcons name={liked ? 'favorite' : 'favorite-border'} size={22} color={liked ? '#fff' : '#FF3B30'} />
+            </TouchableOpacity>
+          </View>
   
           {/* Info */}
           <View style={styles.info}>
@@ -64,11 +79,19 @@ import {
               </TouchableOpacity>
             ) : (
               <View style={styles.qtyRow}>
-                <TouchableOpacity style={styles.qtyBtn}>
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => removeOne(PRODUCT.id)}
+                  accessibilityLabel={`Decrease quantity of ${PRODUCT.name}`}
+                >
                   <Text style={styles.qtyText}>−</Text>
                 </TouchableOpacity>
                 <Text style={styles.qty}>{cartItem.qty}</Text>
-                <TouchableOpacity style={styles.qtyBtn}>
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => addToCart(PRODUCT)}
+                  accessibilityLabel={`Increase quantity of ${PRODUCT.name}`}
+                >
                   <Text style={styles.qtyText}>+</Text>
                 </TouchableOpacity>
               </View>
@@ -89,10 +112,10 @@ import {
         </ScrollView>
   
         {/* Sticky Footer */}
-        {cartItems.length > 0 && (
-          <TouchableOpacity style={styles.cartBar}>
+        {productQty > 0 && (
+          <TouchableOpacity style={styles.cartBar} onPress={() => router.push('/cart')}>
             <Text style={styles.cartText}>
-              View Cart • {cartItems.length} items
+              View Cart • {productQty} items
             </Text>
           </TouchableOpacity>
         )}
@@ -130,6 +153,24 @@ import {
       width: "100%",
       height: 280,
       backgroundColor: "#eee",
+    },
+    imageWrap: {
+      position: 'relative',
+      backgroundColor: '#fff'
+    },
+    heartBtn: {
+      position: 'absolute',
+      top: 12,
+      right: 12,
+      backgroundColor: 'rgba(255,255,255,0.95)',
+      padding: 8,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: '#FFE6E0',
+    },
+    heartBtnActive: {
+      backgroundColor: '#FF3B30',
+      borderColor: '#FF3B30',
     },
   
     info: {

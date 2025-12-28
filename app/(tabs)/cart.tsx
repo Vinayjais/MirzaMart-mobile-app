@@ -1,8 +1,8 @@
+import { showRNFlash } from '@/components/ui/rn-flash';
 import React, { useMemo } from "react";
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
+import { Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCartStore } from "../store/cartStore";
-import { showRNFlash } from '@/components/ui/rn-flash';
 
 export default function CartScreen() {
   const cartItems = useCartStore((state: any) => state.cartItems);
