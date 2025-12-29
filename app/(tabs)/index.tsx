@@ -1,7 +1,7 @@
 // HomeScreen.js
 
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   FlatList,
   Image,
@@ -14,7 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { categories, products } from '../data/products';
 import { useCartStore } from "../store/cartStore";
-
+import { useUserStore } from '../store/useUserStore';
+import {getCurrentLocation}  from   "../../components/getCurrentLocation"
 // const categories = [
 //   { id: 1, label: "Fruits & Veg", icon: require("../../assets/icons/veg.png") },
 //   { id: 2, label: "Dairy", icon: require("../../assets/icons/milk.png") },
@@ -33,8 +34,13 @@ import { useCartStore } from "../store/cartStore";
 
 export default function HomeScreen() {
   const  addToCart = useCartStore((s) => s.addToCart);
+  const  user = useUserStore(s => s.user)
   const router = useRouter();
+  console.log('=====',user)
 
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
   return (
     <SafeAreaView style={styles.container}>
       {/* Top Header */}
@@ -44,8 +50,8 @@ export default function HomeScreen() {
           <Text style={styles.deliveryTime}>Delivery in 20 mins</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.profilePic}>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>V</Text>
+        <TouchableOpacity onPress={()=> router.push('/profile')} style={styles.profilePic}>
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>{user?.name[0].toUpperCase()}</Text>
         </TouchableOpacity>
       </View>
 

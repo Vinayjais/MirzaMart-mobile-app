@@ -75,7 +75,7 @@ export default function ProfileScreen() {
             }
             logout();
             showRNFlash({ message: 'Logged out', type: 'info' });
-            router.replace('/Authentications/login');
+            router.replace('/(tabs)');
           }}
         >
           <Text style={styles.logoutText}>Logout</Text>

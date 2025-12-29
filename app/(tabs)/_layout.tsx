@@ -91,9 +91,9 @@ export default function TabLayout() {
         />
       ) : (
         <Tabs.Screen
-          name="/Authentications/login"
+          name="profile"
           options={{
-            title: 'Login',
+            title: 'Profile',
             tabBarIcon: ({ color }) => (
               <IconSymbol size={28} name="person.fill" color={color} />
             ),
